@@ -12,6 +12,12 @@ builder.Services.AddDbContext<AppDbContext> (options =>
     options.UseSqlServer (builder.Configuration.GetConnectionString ("DefaultConnection")));
 
 var app = builder.Build();
+//Automatisk migrering vid uppstart
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 
