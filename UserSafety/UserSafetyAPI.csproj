@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Entities\" />
+    <Folder Include="DTOs\" />
   </ItemGroup>
 
 </Project>
