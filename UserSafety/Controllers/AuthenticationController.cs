@@ -82,7 +82,7 @@ namespace UserSafetyAPI.Controllers
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: creds
             );
-
+            //Serialiserar token till en sträng med jwtsecuritytokenhandler
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
