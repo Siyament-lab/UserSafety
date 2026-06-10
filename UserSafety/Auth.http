@@ -1,0 +1,24 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+@host = https://localhost:7252
+
+### Registrera användare
+POST {{host}}/api/Authentication/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "password123"
+}
+
+### Logga in och få JWT-token
+POST {{host}}/api/Authentication/login
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "password123"
+}
+
+### Testa skyddat endpoint (klistra in token från login-svaret)
+GET {{host}}/api/Jwt/test
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJqdGkiOiI0NGEwNzIyYy0xNDA0LTRhMTktYjJmMi00MmZjMTgxODQ2MjkiLCJleHAiOjE3ODEwNTY0OTYsImlzcyI6IlVzZXJTYWZldHlBUEkiLCJhdWQiOiJVc2VyU2FmZXR5V2ViIn0.eg5V8FR6bNP2vWD6JfpBEzeDz3uMuISc26rc_ffn-SI
