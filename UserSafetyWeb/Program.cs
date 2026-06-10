@@ -5,7 +5,11 @@ builder.Services.AddRazorPages ();
 // Registrera HttpClient för kommunikation med UserSafetyAPI
 builder.Services.AddHttpClient ("UserSafetyAPI", client =>
 {
-    client.BaseAddress = new Uri ("http://localhost:5062");
+    client.BaseAddress = new Uri ("https://localhost:7252");
+}).ConfigurePrimaryHttpMessageHandler (() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
 });
 
 var app = builder.Build ();
