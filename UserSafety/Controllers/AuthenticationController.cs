@@ -1,9 +1,12 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UserSafetyAPI.Entities;
 using UserSafetyAPI.DTOs;
 using UserSafetyAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace UserSafetyAPI.Controllers
 {
@@ -12,10 +15,12 @@ namespace UserSafetyAPI.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly AppDbContext _dbcontext;
+        private readonly IConfiguration _configuration;
 
-        public AuthenticationController(AppDbContext dbcontext)
+        public AuthenticationController(AppDbContext dbcontext, IConfiguration configuration)
         {
             _dbcontext = dbcontext;
+            _configuration = configuration;
         }
 
         //Metod för användar-registrering
@@ -55,8 +60,30 @@ namespace UserSafetyAPI.Controllers
             {
                 return Unauthorized (new { message = "Ogiltiga inloggningsuppgifter." });
             }
-            // JWT-autentisering läggs till senare med egen branch
-            return Ok (new { message = "Inloggning lyckades." });
+            // JWT-autentisering
+            var token = GenerateJwtToken(user);
+            return Ok (new { message = "Inloggning lyckades.", token });
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(30),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
