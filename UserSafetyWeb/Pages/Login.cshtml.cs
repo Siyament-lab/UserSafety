@@ -32,7 +32,7 @@ namespace UserSafetyWeb.Pages
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse> ();
-                SuccessMessage = $"Inloggning lyckades! Din token: {result?.Token}";
+                SuccessMessage = $"Inloggning lyckades! Välkommen " + Username + "!";
             }
             else
             {
