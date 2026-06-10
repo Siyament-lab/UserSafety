@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using UserSafetyAPI.Entities;
 using UserSafetyAPI.DTOs;
+using UserSafetyAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace UserSafetyAPI.Controllers
 {
@@ -9,18 +11,22 @@ namespace UserSafetyAPI.Controllers
     [Route ("api/[controller]")]
     public class AuthenticationController : ControllerBase
     {
-        //Temporär in-memory datalagring för användare, ersätts med EF core i samband med SQL-databas skapandet.
-        private static readonly Dictionary<string, User> _users = new ();
+        private readonly AppDbContext _dbcontext;
+
+        public AuthenticationController(AppDbContext dbcontext)
+        {
+            _dbcontext = dbcontext;
+        }
 
         //Metod för användar-registrering
         [HttpPost ("register")]
-        public IActionResult Register ( [FromBody] RegisterRequest request )
+        public async Task<IActionResult> RegisterAsync ( [FromBody] RegisterRequest request )
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest (ModelState);
             }
-            if (_users.ContainsKey (request.Username))
+            if (await _dbcontext.Users.AnyAsync (u => u.UserName == request.Username))
             {
                 return BadRequest (new { message = "Användarnamn är redan taget." });
             }
@@ -28,31 +34,28 @@ namespace UserSafetyAPI.Controllers
 
             var user = new User
             {
-                Id = _users.Count + 1,
                 UserName = request.Username,
-                PasswordHash = passwordHash // Hasha lösenordet
+                PasswordHash = passwordHash
             };
-            _users.Add (user.UserName, user);
+            _dbcontext.Users.Add(user);
+            await _dbcontext.SaveChangesAsync();
             return Ok (new { message = "Registrering lyckades." });
         }
         //Metod för användar-inloggning
         [HttpPost ("login")]
-        public IActionResult Login ( [FromBody] LoginRequest request )
+        public async Task<IActionResult> LoginAsync ( [FromBody] LoginRequest request )
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest (ModelState);
             }
-            if (!_users.TryGetValue (request.Username, out var user))
+            var user = await _dbcontext.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.Username);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return Unauthorized (new { message = "Ogiltiga inloggningsuppgifter." });
             }
-
-            if (!BCrypt.Net.BCrypt.Verify (request.Password, user.PasswordHash))
-            {
-                return Unauthorized (new { message = "Ogiltiga inloggningsuppgifter." });
-            }
-            // Byter ut mot JWT authentisering i samband med SQL-databas skapandet.
+            // JWT-autentisering läggs till senare med egen branch
             return Ok (new { message = "Inloggning lyckades." });
         }
     }
