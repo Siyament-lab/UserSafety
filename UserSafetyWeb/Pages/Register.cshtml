@@ -1,0 +1,37 @@
+﻿@page
+@model UserSafetyWeb.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Registrera";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <h2 class="text-center mb-4">Registrera konto</h2>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success">@Model.SuccessMessage</div>
+            }
+
+            <form method="post">
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label">Användarnamn</label>
+                    <input asp-for="Username" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">Lösenord</label>
+                    <input asp-for="Password" type="password" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Registrera</button>
+                <div class="text-center mt-3">
+                    <a href="/Login">Har du redan ett konto? Logga in här</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
